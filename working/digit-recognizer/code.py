@@ -16,9 +16,12 @@ x_train = train.drop('label', axis=1)
 
 test_id = x_test.index
 
-x_train = torch.tensor(x_train.values, dtype=torch.float)
+x_train /= 255
+x_test /= 255
+
+x_train = torch.tensor(x_train.values, dtype=torch.float).view(-1, 1, 28, 28)
+x_test = torch.tensor(x_test.values, dtype=torch.float).view(-1, 1, 28, 28)
 y_train = torch.tensor(y_train.values, dtype=torch.long)
-x_test = torch.tensor(x_test.values, dtype=torch.float)
 
 dataset = TensorDataset(x_train, y_train)
 
@@ -48,21 +51,18 @@ class LitModel(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=1e-2)
+        return torch.optim.Adam(self.parameters(), lr=1e-3)
 
 model = LitModel()
-trainer = pl.Trainer(max_epochs=1)
+trainer = pl.Trainer(max_epochs=3)
 
-trainer.fit(model, DataLoader(dataset, batch_size=64))
+trainer.fit(model, DataLoader(dataset, batch_size=64, shuffle=True))
 
-num_correct = 0
-for x, y in dataset:
-    y_pred = model(x.view(1, 784))
-    if y_pred.argmax(1).item() == y:
-        num_correct += 1
-print(num_correct / 42000)
+model.eval()
 
 y_pred = model(x_test).argmax(1)
 
 submission = pd.DataFrame({'ImageId': test_id + 1, 'Label': y_pred.numpy()})
 submission.to_csv(r"submission.csv", index=False)
+
+# Best score : 0.97050
