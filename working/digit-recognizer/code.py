@@ -54,7 +54,7 @@ class LitModel(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), lr=1e-3)
 
 model = LitModel()
-trainer = pl.Trainer(max_epochs=3)
+trainer = pl.Trainer(max_epochs=8)
 
 trainer.fit(model, DataLoader(dataset, batch_size=64, shuffle=True))
 
@@ -65,4 +65,4 @@ y_pred = model(x_test).argmax(1)
 submission = pd.DataFrame({'ImageId': test_id + 1, 'Label': y_pred.numpy()})
 submission.to_csv(r"submission.csv", index=False)
 
-# Best score : 0.97050
+# Best score : 0.98185
