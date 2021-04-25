@@ -1,1 +1,1 @@
-High score: 0.98689
+High score: 0.98803
